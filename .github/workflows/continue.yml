@@ -1,4 +1,4 @@
-name: Website Deployment
+name: Continue Website Deployment
 on:
   push:
     branches:
@@ -37,13 +37,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Test code
+        continue-on-error: true # says, other steps/jobs should continue running even if this test fails 
         id: run-test      # you can give whatever name you want
         run: npm run test
-      - name: Upload test report
-        # recall "steps" is a context object; "run-test" is the id of the step above; "outcome" is a field on the "steps" context 
-        # "failure()" checks if previous step failed, if it did, it returns true, this will cause current step to execute and not get skipped as it is the default behaviour in github workflow
-        # the current step will not execute if the step "Test code" did not fail 
-        if: failure() && steps.run-test.outcome == 'failure'  
+      - name: Upload test report 
         uses: actions/upload-artifact@v3
         with:
           name: test-report
