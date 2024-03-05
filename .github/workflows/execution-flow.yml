@@ -37,8 +37,9 @@ jobs:
         run: npm run test
       - name: Upload test report
         # recall "steps" is a context object; "run-test" is the id of the step above; "outcome" is a field on the "steps" context 
-        # "failure()" checks if previous step failed, if it did it returns true, this cause current step to execute
-        if: failure() && steps.run-test.outcome == 'failure'
+        # "failure()" checks if previous step failed, if it did, it returns true, this will cause current step to execute and not get skipped as it is the default behaviour in github workflow
+        # the current step will not execute if the step "Test code" did not fail 
+        if: failure() && steps.run-test.outcome == 'failure'  
         uses: actions/upload-artifact@v3
         with:
           name: test-report
@@ -77,3 +78,13 @@ jobs:
         run: ls
       - name: Deploy
         run: echo "Deploying..."
+  report:
+    needs: [lint, deploy] 
+    if: failure()   # says, this job should only execute if any other job failed
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output information
+        run: |
+          echo "Something went wrong"
+          echo "${{ toJSON(github) }}"
+
