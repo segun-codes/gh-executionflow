@@ -26,3 +26,12 @@ jobs:
             - name: Build Project
               run: npm run build
 
+# The possible combination of configurations include:
+# So a job will be spawned for each of these 6configurrations; this is how matrix strategy works;
+# Basically, you spin-out multiple job (here, 6jobs) from one job definition as above;
+# { node-version: 12, operating-system: ubuntu-latest }
+# { node-version: 14, operating-system: ubuntu-latest }
+# { node-version: 14, operating-system: windows-latest }
+# { node-version: 16, operating-system: windows-latest }
+# { node-version: 16, operating-system: windows-latest }
+# { node-version: 18, operating-system: ubuntu-latest }

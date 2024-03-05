@@ -1,0 +1,87 @@
+name: Website Deployment
+on:
+  push:
+    branches:
+      - main
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: node_modules # better to cache node_modules instead of ~/.npm
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        # "steps" is a github context, "cache" is th  id of the step above 
+        # "outputs"  is a field on "steps"
+        # "cache-hit" is a field on steps 
+        if: steps.cache.outputs.cache-hit != 'true'  # means this step should only execute if there is a cache-miss (i.e., if cached "node_modules" was not found) 
+        run: npm ci
+      - name: Lint code
+        run: npm run lint
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: node_modules    # this is npm's natural global cache folder (has nothing to do with github action)
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Test code
+        id: run-test      # you can give whatever name you want
+        run: npm run test
+      - name: Upload test report
+        # recall "steps" is a context object; "run-test" is the id of the step above; "outcome" is a field on the "steps" context 
+        # "failure()" checks if previous step failed, if it did, it returns true, this will cause current step to execute and not get skipped as it is the default behaviour in github workflow
+        # the current step will not execute if the step "Test code" did not fail 
+        if: failure() && steps.run-test.outcome == 'failure'  
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: test.json
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get code
+        uses: actions/checkout@v3
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: deps-node-modules-${{ hashFiles('**/package-lock.json') }}
+      - name: Install dependencies
+        run: npm ci
+      - name: Build website
+        id: build-website
+        run: npm run build
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist-files
+          path: dist
+  deploy:
+    needs: build
+    uses: ./.github/workflows/reusable.yml
+
+
+  report:
+    needs: [lint, deploy] 
+    if: failure()   # says, this job should only execute if any other job failed
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output information
+        run: |
+          echo "Something went wrong"
+          echo "${{ toJSON(github) }}"
+
