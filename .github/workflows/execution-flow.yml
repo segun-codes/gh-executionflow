@@ -37,7 +37,8 @@ jobs:
         run: npm run test
       - name: Upload test report
         # recall "steps" is a context object; "run-test" is the id of the step above; "outcome" is a field on the "steps" context 
-        if: steps.run-test.outcome == 'failure'
+        # "failure()" checks if previous step failed, if it did it returns true, this cause current step to execute
+        if: failure() && steps.run-test.outcome == 'failure'
         uses: actions/upload-artifact@v3
         with:
           name: test-report
