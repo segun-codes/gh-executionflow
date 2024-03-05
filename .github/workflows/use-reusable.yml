@@ -73,8 +73,6 @@ jobs:
   deploy:
     needs: build
     uses: ./.github/workflows/reusable.yml
-
-
   report:
     needs: [lint, deploy] 
     if: failure()   # says, this job should only execute if any other job failed
