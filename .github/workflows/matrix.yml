@@ -4,9 +4,15 @@ jobs:
     build:
         continue-on-error: true
         strategy:
-            matrix:
+            matrix: # this strategy means, 6jobs will be spawned (using the combinations of configurations given below) from this job definition 
                 node-version: [12, 14, 16]
                 operating-system: [ubuntu-latest, windows-latest]
+                include: # this configuration will be used once in a job execution
+                    - node-version: 18
+                      operating-system: ubuntu-latest
+                exclude: # no job will run with this configuration
+                    - node-version: 12
+                      operating-system: windows-latest
         runs-on: ${{ matrix.operating-system }}
         steps:
             - name: Get Code
