@@ -72,7 +72,19 @@ jobs:
           path: dist
   deploy:
     needs: build
-    uses: ./.github/workflows/reusable.yml
+    uses: ./.github/workflows/reusable.yml # we are invoking a workflow here
+    with:         
+      artifact-name: dist-files            # we are passing "dist-files" as argument to the invoked workflow here
+    # secrets:                             # we are passing the dynamic secret value as argument to the invoked workflow
+      # some-secret: ${{ secrets.some-secret }}
+  print-deploy-result:                                                                                                                                                                                                               
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print deploy output
+        # "needs" is github context, "deploy" is the job above, "outputs" is a property on "needs"
+        # "result" is the name given to the output in the reusable workflow in file reusable.yml 
+        run: echo "${{ needs.deploy.outputs.result }}"  
   report:
     needs: [lint, deploy] 
     if: failure()   # says, this job should only execute if any other job failed

@@ -1,8 +1,41 @@
+# this workflow is reused in the workflow defined here "use.reusable.yml"
+# think of this reusable workflow, that it takes "inputs" and "outputs"
 name: Reusable Deploy
-on: workflow_call
+on: 
+    workflow_call: # means this workflow can only be called from within another workflow
+      # this specifies the value that must be passed as argument by any workflow invoking this current workflow  
+      inputs: 
+            artifact-name: 
+                description: The name of the deployable artifact files
+                required: false
+                default: dist
+                type: string
+      # think of this as setting up return value. Any parent workflow that uses this workflow will receive the dynamic value set against "value" below as return value          
+      outputs: 
+        result:
+          description: The result of the deployment operation
+          value: ${{ jobs.deploy.outputs.outcome }} 
+      # secrets: # this means secret must be supplied by the calling workflow
+        # some-secret: 
+          # required: false
 jobs:
     deploy:
+        # here's the output or what this job returns
+        outputs:
+          # "steps" - context, "set-result" - id of step below, "outputs" - inbuilt property on "steps", "step-result" is the key of pair written into $GITHUB_OUTPUT below
+          outcome: ${{ steps.set-result.outputs.step-result }}   
         runs-on: ubuntu-latest
         steps:
+            - name: Get code from repo into runner
+              uses: actions/downlooad-artifact@v3
+              with:
+                name: ${{ inputs.artifact-name }} "inputs" is a context, "artifact-name" 
+            - name: List files
+              run: ls
             - name: Output Information
               run: echo "Deploying & uploading"
+            - name: Set result output
+              id: set-result
+              run: echo "step-result=success" >> $GITHUB_OUTPUT  # writing text ""step-result=success" into $GITHUB_OUTPUT
+
+              
