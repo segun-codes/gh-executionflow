@@ -27,7 +27,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: Get code from repo into runner
-              uses: actions/downlooad-artifact@v3
+              uses: actions/download-artifact@v3
               with:
                 name: ${{ inputs.artifact-name }} "inputs" is a context, "artifact-name" 
             - name: List files
