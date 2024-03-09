@@ -29,7 +29,7 @@ jobs:
             - name: Get code from repo into runner
               uses: actions/download-artifact@v3
               with:
-                name: ${{ inputs.artifact-name }} "inputs" is a context, "artifact-name" 
+                name: ${{ inputs.artifact-name }} # "inputs" is a context, "artifact-name" 
             - name: List files
               run: ls
             - name: Output Information
